@@ -1,0 +1,30 @@
+name: Manually trigger an Azure Machine Learning job
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  train:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v5
+
+      - name: Install Azure ML extension
+        run: az extension add --name ml --yes
+
+      - name: Azure login
+        uses: azure/login@v3
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Run Azure Machine Learning job
+        run: |
+          az ml job create \
+            --file src/job.yml \
+            --resource-group "${{ vars.AZURE_RESOURCE_GROUP }}" \
+            --workspace-name "${{ vars.AZURE_ML_WORKSPACE }}" \
+            --stream
